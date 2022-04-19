@@ -1,5 +1,6 @@
 from RPA.Browser.Selenium import Selenium
 from RPA.Excel.Files import Files
+from RPA.HTTP import HTTP
 from SeleniumLibrary.errors import ElementNotFound
 
 from article import Article
@@ -11,6 +12,7 @@ class NYTArticleSearcher:
     def start_new_search(self, phrase):
         self.phrase = phrase
         self.lib = Selenium()
+        self.http = HTTP()
 
         self.lib.open_available_browser("https://www.nytimes.com/")
 
@@ -38,7 +40,7 @@ class NYTArticleSearcher:
         self.lib.input_text("endDate", "{:02d}/{:02d}/{}".format(to_date.month, to_date.day, to_date.year))
         self.lib.click_element("//html/body/div[1]/div[2]/main/div/div[1]/div[2]/div/div/div[1]/div/div/button")
 
-    def get_articles(self):
+    def get_articles(self, download_images=False):
         assert self.is_started
 
         index = 1
@@ -68,10 +70,14 @@ class NYTArticleSearcher:
             name = item.find_element_by_xpath(".//div/div/div/a/h4").text
             desc = item.find_element_by_xpath(".//div/div/div/a/p").text
             picture = item.find_element_by_xpath(".//div/div/figure/div/img").get_attribute("src")
+            if download_images:
+                filename = "images/{}".format(picture.rsplit('/', 1)[-1].rsplit('?', 1)[0])
+                self.http.download(picture, filename)
+                picture = filename
             phrase_count = name.count(self.phrase) + desc.count(self.phrase)
             yield Article(name, date, desc, picture, phrase_count)
 
-    def export_articles_to_excel(self, filename):
+    def export_articles_to_excel(self, filename, download_images=False):
         assert self.is_started
 
         files = Files()
@@ -85,7 +91,7 @@ class NYTArticleSearcher:
         book.set_cell_value(1, 6, "Contains amount of money")
 
         row_index = 2
-        for article in self.get_articles():
+        for article in self.get_articles(download_images):
             book.set_cell_value(row_index, 1, article.title)
             book.set_cell_value(row_index, 2, article.date)
             book.set_cell_value(row_index, 3, article.description)
