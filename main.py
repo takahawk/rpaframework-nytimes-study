@@ -11,10 +11,9 @@ category = "Arts"
 months = 1
 
 searcher = NYTArticleSearcher()
+searcher.is_started = True
 searcher.start_new_search(phrase)
 searcher.apply_category_filter(category)
-# TODO: fix date calculation
+# # TODO: fix date calculation
 searcher.apply_date_filter(from_date=date.today() - relativedelta(months=months), to_date=date.today())
-
-for article in searcher.get_articles():
-    print(article)
+searcher.export_articles_to_excel(phrase)

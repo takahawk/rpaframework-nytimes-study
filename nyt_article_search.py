@@ -1,4 +1,5 @@
 from RPA.Browser.Selenium import Selenium
+from RPA.Excel.Files import Files
 from SeleniumLibrary.errors import ElementNotFound
 
 from article import Article
@@ -69,6 +70,30 @@ class NYTArticleSearcher:
             picture = item.find_element_by_xpath(".//div/div/figure/div/img").get_attribute("src")
             phrase_count = name.count(self.phrase) + desc.count(self.phrase)
             yield Article(name, date, desc, picture, phrase_count)
+
+    def export_articles_to_excel(self, filename):
+        assert self.is_started
+
+        files = Files()
+        book = files.create_workbook("{}.xlsx".format(filename))
+        # TODO: format?
+        book.set_cell_value(1, 1, "Title")
+        book.set_cell_value(1, 2, "Date")
+        book.set_cell_value(1, 3, "Description")
+        book.set_cell_value(1, 4, "Picture filename")
+        book.set_cell_value(1, 5, "Count of search phrases")
+        book.set_cell_value(1, 6, "Contains amount of money")
+
+        row_index = 2
+        for article in self.get_articles():
+            book.set_cell_value(row_index, 1, article.title)
+            book.set_cell_value(row_index, 2, article.date)
+            book.set_cell_value(row_index, 3, article.description)
+            book.set_cell_value(row_index, 4, article.picture)
+            book.set_cell_value(row_index, 5, article.phrases_count)
+            book.set_cell_value(row_index, 6, article.contains_amount)
+            row_index += 1
+        book.save("{}.xlsx".format(filename))
 
     def _apply_filter(self, filter, picker_xpath, list_xpath):
         assert self.is_started
