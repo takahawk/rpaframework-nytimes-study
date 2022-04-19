@@ -1,12 +1,13 @@
 from datetime import date
 from dateutil.relativedelta import relativedelta
+import json
 
 from nyt_article_search import NYTArticleSearcher
 
-# TODO: put to Robocorp Cloud
-phrase = "Ukraine"
-category = "Arts"
-months = 1
+# TODO: move to Robocorp Cloud
+with open("config.json") as json_config:
+    # load config to variables
+    locals().update(json.load(json_config))
 
 searcher = NYTArticleSearcher()
 searcher.is_started = True
