@@ -11,14 +11,14 @@ class NYTArticleSearcher:
 
     def start_new_search(self, phrase):
         self.phrase = phrase
-        self.lib = Selenium()
+        self.browser = Selenium()
         self.http = HTTP()
 
-        self.lib.open_available_browser("https://www.nytimes.com/")
+        self.browser.open_available_browser("https://www.nytimes.com/")
 
-        self.lib.click_element("//html/body/div[1]/div[2]/div/header/section[1]/div[1]/div[2]/button")
-        self.lib.input_text("//html/body/div[1]/div[2]/div/header/section[1]/div[1]/div[2]/div/form/div/input", phrase)
-        self.lib.click_element("//html/body/div[1]/div[2]/div/header/section[1]/div[1]/div[2]/div/form/button")
+        self.browser.click_element("//html/body/div[1]/div[2]/div/header/section[1]/div[1]/div[2]/button")
+        self.browser.input_text("//html/body/div[1]/div[2]/div/header/section[1]/div[1]/div[2]/div/form/div/input", phrase)
+        self.browser.click_element("//html/body/div[1]/div[2]/div/header/section[1]/div[1]/div[2]/div/form/button")
         self.is_started = True
 
     def apply_category_filter(self, filter):
@@ -34,11 +34,11 @@ class NYTArticleSearcher:
     def apply_date_filter(self, from_date, to_date):
         assert self.is_started
 
-        self.lib.click_element("//html/body/div[1]/div[2]/main/div/div[1]/div[2]/div/div/div[1]/div/div/button")
-        self.lib.click_element("//html/body/div[1]/div[2]/main/div/div[1]/div[2]/div/div/div[1]/div/div/div/ul/li[6]/button")
-        self.lib.input_text("startDate", "{:02d}/{:02d}/{}".format(from_date.month, from_date.day, from_date.year))
-        self.lib.input_text("endDate", "{:02d}/{:02d}/{}".format(to_date.month, to_date.day, to_date.year))
-        self.lib.click_element("//html/body/div[1]/div[2]/main/div/div[1]/div[2]/div/div/div[1]/div/div/button")
+        self.browser.click_element("//html/body/div[1]/div[2]/main/div/div[1]/div[2]/div/div/div[1]/div/div/button")
+        self.browser.click_element("//html/body/div[1]/div[2]/main/div/div[1]/div[2]/div/div/div[1]/div/div/div/ul/li[6]/button")
+        self.browser.input_text("startDate", "{:02d}/{:02d}/{}".format(from_date.month, from_date.day, from_date.year))
+        self.browser.input_text("endDate", "{:02d}/{:02d}/{}".format(to_date.month, to_date.day, to_date.year))
+        self.browser.click_element("//html/body/div[1]/div[2]/main/div/div[1]/div[2]/div/div/div[1]/div/div/button")
 
     def get_articles(self, download_images=False):
         assert self.is_started
@@ -46,11 +46,11 @@ class NYTArticleSearcher:
         index = 1
         while True:
             try:
-                item = self.lib.find_element("//html/body/div[1]/div[2]/main/div/div[2]/div[2]/ol/li[{}]".format(index))
+                item = self.browser.find_element("//html/body/div[1]/div[2]/main/div/div[2]/div[2]/ol/li[{}]".format(index))
             except ElementNotFound:
                 try:
                     # click "show more"
-                    self.lib.click_element("//html/body/div[1]/div[2]/main/div/div[2]/div[3]/div/button")
+                    self.browser.click_element("//html/body/div[1]/div[2]/main/div/div[2]/div[3]/div/button")
                 except ElementNotFound:
                     return
                 continue
@@ -101,11 +101,14 @@ class NYTArticleSearcher:
             row_index += 1
         book.save("{}.xlsx".format(filename))
 
+    def stop(self):
+        self.browser.close_all_browsers()
+
     def _apply_filter(self, filter, picker_xpath, list_xpath):
         assert self.is_started
 
-        self.lib.click_element(picker_xpath)
-        elem = self.lib.find_element(list_xpath)
+        self.browser.click_element(picker_xpath)
+        elem = self.browser.find_element(list_xpath)
         children = elem.find_elements_by_xpath(".//li")
         for child in children:
             try:
@@ -119,4 +122,4 @@ class NYTArticleSearcher:
             if name == filter:
                 child.click()
                 return
-        self.lib.click_element(picker_xpath)
+        self.browser.click_element(picker_xpath)
