@@ -1,3 +1,4 @@
+import os
 from datetime import date
 from dateutil.relativedelta import relativedelta
 import json
@@ -12,7 +13,10 @@ def main():
             # load config to variables
             config = json.load(json_config)
 
-        globals().update(config)
+        phrase = os.getenv("PHRASE") or config['phrase']
+        category = os.getenv("CATEGORY") or config['category']
+        months = int(os.getenv("MONTHS") or config['months'])
+        
         searcher.start_new_search(phrase)
         searcher.apply_category_filter(category)
         # TODO: fix date calculation
