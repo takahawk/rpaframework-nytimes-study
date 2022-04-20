@@ -22,7 +22,7 @@ def main():
         searcher.apply_category_filter(category)
         # TODO: fix date calculation
         today = date.today()
-        start_date = date(today.year, today.month - months, 1)
+        start_date = date(today.year, (today.month - months - 1) % 12 + 1, 1)
 
         searcher.apply_date_filter(from_date=start_date, to_date=today)
         searcher.export_articles_to_excel(phrase, download_images=True)
